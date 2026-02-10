@@ -252,7 +252,8 @@ The registry does not rank by popularity, reviews, or payment. But gaming
 is still possible. Defenses:
 
 - **One app per domain** — Prevents bulk spam registration
-- **Domain ownership verification** — DNS TXT must match
+- **Manifest fetch as proof of control** — The registry fetches `/.well-known/oap.json` directly from the domain at registration. You cannot register a domain unless you control its web server. This is the baseline ownership check and is always enforced.
+- **DNS TXT verification (optional, recommended)** — Adding a `_oap.{domain}` TXT record proves DNS-level domain ownership, a stronger signal than web hosting control alone. DNS verification is optional to keep the adoption bar low (5 minutes, no DNS access required), but apps without it are marked as unverified in search results. Agents can weight DNS-verified apps higher in trust scoring.
 - **Manifest-source consistency** — Declared capabilities must match observable behavior
 - **Builder reputation** — Cross-referencing verified_domains shows builder track record
 - **Agent-side evaluation** — The registry provides data; AI agents decide trust
