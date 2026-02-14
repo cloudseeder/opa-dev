@@ -1,258 +1,214 @@
-# Open Application Protocol (OAP) — Draft Specification v0.1
+# OAP Manifest Specification v1.0
 
-## Overview
+## Publishing
 
-The Open Application Protocol (OAP) is a lightweight, decentralized standard that enables
-AI agents to discover, evaluate, and recommend web applications based on capability match
-and verified trust signals — without any central registry or gatekeeper.
+Host a JSON file at `/.well-known/oap.json` on your domain over HTTPS.
 
-## Design Principles
-
-1. **Five-minute adoption** — A solo developer using Claude Code can add OAP to their app in minutes
-2. **Machine-first** — Designed for AI agent consumption, not human browsing
-3. **Decentralized** — No central registry. Discovery via DNS + well-known paths
-4. **Verifiable** — Claims are testable, not just declared
-5. **Complementary** — Works alongside MCP (agent-to-tool) and A2A (agent-to-agent)
-
-## How It Works
-
-```
-User: "I need a simple email-based support CRM for my 5-person team"
-         |
-    AI Agent queries DNS TXT records and/or crawl index
-         |
-    Finds domains with _oap TXT records
-         |
-    Fetches /.well-known/oap.json from each
-         |
-    Matches capabilities to user need
-         |
-    Recommends best fits with trust context
-```
-
----
-
-## 1. The Manifest
-
-Every participating application hosts a JSON manifest at:
-
-```
-https://{domain}/.well-known/oap.json
-```
-
-### Schema
+## Manifest Format
 
 ```json
 {
-  "$schema": "https://oap.dev/schema/v0.1.json",
-  "oap_version": "0.1",
+  "oap": "1.0",
+  "name": "string — Capability name",
+  "description": "string — What this does, in plain English. Write for an LLM that needs to decide if this capability fits a task. Be specific about what makes this different from alternatives. Max 1000 chars.",
+  "url": "string (optional) — Human-facing URL",
 
-  "identity": {
-    "name": "string — Application name",
-    "tagline": "string — One-line description (max 120 chars)",
-    "description": "string — What this app does, written for AI agent comprehension (max 500 chars)",
-    "url": "string — Primary application URL",
-    "logo": "string (optional) — URL to logo image",
-    "version": "string (optional) — Current application version",
-    "launched": "string (optional) — ISO 8601 date of initial launch"
+  "input": {
+    "format": "string — MIME type (e.g., text/plain, application/json)",
+    "description": "string — What this capability needs. Describe the shape and meaning of expected input.",
+    "schema": "string (optional) — URL to JSON Schema or OpenAPI spec for structured input"
   },
 
-  "builder": {
-    "name": "string — Person or organization name",
-    "url": "string (optional) — Builder's website",
+  "output": {
+    "format": "string — MIME type of what this produces",
+    "description": "string — What comes back. Describe the shape and meaning of the output.",
+    "schema": "string (optional) — URL to JSON Schema for structured output"
+  },
+
+  "invoke": {
+    "method": "string — HTTP method (GET, POST) or 'stdio' for command-line tools",
+    "url": "string — Endpoint URL, or command path for stdio",
+    "auth": "string (optional) — none | api_key | oauth2 | bearer",
+    "auth_url": "string (optional) — Where to get credentials if auth is required",
+    "streaming": "boolean (optional) — Whether this supports streaming responses"
+  },
+
+  "publisher": {
+    "name": "string (optional) — Person or organization",
     "contact": "string (optional) — Contact email",
-    "verified_domains": ["string — Other domains owned by this builder"]
+    "url": "string (optional) — Publisher website"
   },
 
-  "capabilities": {
-    "summary": "string — Natural language description of what the app does, optimized for semantic matching by AI agents (max 1000 chars)",
-    "solves": ["string — Problems this app addresses, as a user would describe them"],
-    "ideal_for": ["string — Target user profiles"],
-    "categories": ["string — Standardized category tags"],
-    "differentiators": ["string — What makes this different from alternatives"]
-  },
+  "examples": [
+    {
+      "input": "string or object — Example input",
+      "output": "string or object — What this produces for that input",
+      "description": "string (optional) — What this example demonstrates"
+    }
+  ],
 
-  "pricing": {
-    "model": "string — free | freemium | subscription | one_time | usage_based",
-    "starting_price": "string (optional) — Lowest tier, e.g. '$5/seat/month'",
-    "trial": {
-      "available": "boolean",
-      "duration_days": "integer (optional)",
-      "requires_credit_card": "boolean (optional)"
-    },
-    "pricing_url": "string (optional) — URL to full pricing page"
-  },
+  "tags": ["string (optional) — Freeform tags for indexing. Not a taxonomy. Just hints."],
 
-  "trust": {
-    "data_practices": {
-      "collects": ["string — Types of data collected, e.g. 'email addresses', 'support ticket content'"],
-      "stores_in": "string — Where data is stored, e.g. 'US-based cloud (AWS)', 'EU (GCP)'",
-      "shares_with": ["string — Third parties data is shared with, or 'none'"],
-      "retention": "string (optional) — Data retention policy summary",
-      "encryption": "string (optional) — e.g. 'at rest and in transit'"
-    },
-    "security": {
-      "authentication": ["string — e.g. 'email/password', 'SSO', 'OAuth'"],
-      "compliance": ["string (optional) — e.g. 'SOC2', 'GDPR', 'HIPAA'"],
-      "audit_log": "boolean (optional)",
-      "multi_tenant_isolation": "boolean (optional)"
-    },
-    "external_connections": ["string — APIs and services the app connects to"],
-    "privacy_url": "string (optional) — URL to privacy policy",
-    "terms_url": "string (optional) — URL to terms of service"
-  },
+  "health": "string (optional) — URL returning HTTP 200 if the capability is operational",
+  "docs": "string (optional) — URL to documentation",
+  "version": "string (optional) — Capability version",
+  "updated": "string (optional) — ISO 8601 date of last manifest update"
+}
+```
 
-  "integration": {
-    "mcp_endpoint": "string (optional) — MCP server URL if available",
-    "api": {
-      "available": "boolean",
-      "docs_url": "string (optional)",
-      "auth_method": "string (optional) — e.g. 'API key', 'OAuth2'"
-    },
-    "webhooks": "boolean (optional)",
-    "import_from": ["string (optional) — Services users can import data from"],
-    "export_formats": ["string (optional) — e.g. 'CSV', 'JSON', 'PDF'"]
-  },
+## Required Fields
 
-  "verification": {
-    "status_url": "string (optional) — Public status/uptime page",
-    "health_endpoint": "string (optional) — Deep health check URL returning HTTP 200. For apps that want to signal more than basic liveness (e.g. database, API, and dependency health). If omitted, the registry uses the manifest URL (/.well-known/oap.json) as a liveness check.",
-    "demo_url": "string (optional) — URL to live demo or sandbox"
+Only four things are required. Everything else is optional.
+
+| Field | Why |
+|-------|-----|
+| `oap` | Protocol version, for forward compatibility |
+| `name` | What to call it |
+| `description` | What it does — this is the most important field. An LLM reads this to decide if the capability matches a task. Write it well. |
+| `invoke` | How to call it |
+
+Input and output descriptions are technically optional but strongly recommended. A capability without described input/output is like a Unix tool without a `man` page — it works, but nobody will use it.
+
+## Examples
+
+### Simple: A text summarizer
+
+```json
+{
+  "oap": "1.0",
+  "name": "Summarize",
+  "description": "Accepts any text and returns a concise summary. Handles documents up to 100,000 words. Returns plain text, not markdown. Optimized for meeting transcripts and legal documents but works on anything.",
+  "input": {
+    "format": "text/plain",
+    "description": "The text to summarize. Any length up to 100k words."
+  },
+  "output": {
+    "format": "text/plain",
+    "description": "A concise summary, typically 10-20% of the original length."
+  },
+  "invoke": {
+    "method": "POST",
+    "url": "https://summarize.example.com/api/v1/summarize",
+    "auth": "api_key",
+    "auth_url": "https://summarize.example.com/developers"
+  },
+  "examples": [
+    {
+      "input": "The quarterly earnings report showed a 12% increase in revenue...",
+      "output": "Revenue grew 12% with margins expanding to 34%. Management raised full-year guidance.",
+      "description": "Financial document summarization"
+    }
+  ]
+}
+```
+
+### Minimal: A civic meeting transcriber
+
+```json
+{
+  "oap": "1.0",
+  "name": "myNewscast Meeting Processor",
+  "description": "Ingests government meeting videos and produces structured transcripts with speaker identification, topic segmentation, and voting records. Covers city councils, planning commissions, school boards, and similar civic bodies. Input is a URL to a video. Output is a structured JSON transcript.",
+  "input": {
+    "format": "text/plain",
+    "description": "URL to a publicly accessible government meeting video"
+  },
+  "output": {
+    "format": "application/json",
+    "description": "Structured transcript with speakers, topics, timestamps, motions, and votes"
+  },
+  "invoke": {
+    "method": "POST",
+    "url": "https://api.mynewscast.com/v1/process",
+    "auth": "bearer"
   }
 }
 ```
 
----
+### The one that started it all: grep
 
-## 2. DNS Discovery
-
-Applications signal OAP participation via DNS TXT record:
-
-```
-_oap.example.com TXT "v=oap1; manifest=https://example.com/.well-known/oap.json"
-```
-
-### Why DNS?
-
-- Fully decentralized — no registry needed
-- Domain ownership is inherently verified
-- AI agents and crawlers can discover manifests at scale
-- Follows established patterns (_dmarc, _acme-challenge, etc.)
-
-### Optional: DNS-based capability hints
-
-For faster pre-filtering without fetching the full manifest:
-
-```
-_oap.example.com TXT "v=oap1; cat=crm,support,ai; price=subscription; manifest=https://example.com/.well-known/oap.json"
-```
-
----
-
-## 3. Discovery Mechanisms
-
-OAP supports multiple discovery paths — no single point of failure:
-
-### Primary: OAP Registry (npm model)
-Builders register their app by submitting their URL to an open registry.
-The registry fetches the manifest, validates it, verifies DNS, and indexes
-it for search. Registration is instant, free, and requires no approval.
-
-See the [Registry Specification](/registry) for the full registry specification.
-
-```
-POST registry.oap.dev/api/v1/register
-{ "url": "https://myapp.com" }
+```json
+{
+  "oap": "1.0",
+  "name": "grep",
+  "description": "Searches text for lines matching a pattern. Accepts regular expressions or fixed strings. Reads from stdin or named files. Returns matching lines to stdout, one per line. Exit code 0 if matches found, 1 if not. Supports recursive directory search, case-insensitive matching, inverted matching (lines that don't match), and context lines before/after matches. The most common text search tool in Unix.",
+  "input": {
+    "format": "text/plain",
+    "description": "Text on stdin or file paths as arguments, plus a search pattern as the first argument. Pattern can be a basic regex, extended regex (-E), or fixed string (-F)."
+  },
+  "output": {
+    "format": "text/plain",
+    "description": "Matching lines printed to stdout, one per line. With -c, prints only a count. With -l, prints only filenames containing matches. With -n, prefixes each line with its line number."
+  },
+  "invoke": {
+    "method": "stdio",
+    "url": "grep"
+  },
+  "examples": [
+    {
+      "input": "echo 'hello world\ngoodbye world\nhello again' | grep hello",
+      "output": "hello world\nhello again",
+      "description": "Simple pattern matching on stdin"
+    }
+  ],
+  "docs": "https://www.gnu.org/software/grep/manual/grep.html",
+  "tags": ["search", "text", "pattern", "regex", "filter", "cli"]
+}
 ```
 
-**Key properties:**
-- Anyone can register. No approval process.
-- Anyone can run their own registry. The public one is the default, not the only one.
-- The registry stores pointers and cached metadata. Truth lives at the source.
-- AI agents query the registry to match user needs to app capabilities.
-- Multiple registries can coexist. Deduplication is by domain.
+### Unix-native: A command-line tool
 
-### Secondary: Direct manifest fetch
-Any agent encountering a domain can check `/.well-known/oap.json` — like checking robots.txt.
+```json
+{
+  "oap": "1.0",
+  "name": "jq",
+  "description": "Command-line JSON processor. Filters, transforms, and formats JSON data using a concise expression language. Like sed for JSON. Takes JSON on stdin, applies a filter expression, produces transformed JSON on stdout.",
+  "input": {
+    "format": "application/json",
+    "description": "JSON data on stdin, plus a filter expression as a command-line argument"
+  },
+  "output": {
+    "format": "application/json",
+    "description": "Transformed JSON on stdout"
+  },
+  "invoke": {
+    "method": "stdio",
+    "url": "jq"
+  },
+  "docs": "https://jqlang.github.io/jq/manual/",
+  "tags": ["json", "transform", "filter", "cli"]
+}
+```
 
-### Tertiary: DNS TXT verification
-DNS TXT records at `_oap.domain.com` verify domain ownership and
-participation. Used by registries during registration, and by agents
-for independent verification.
+## Discovery
 
-### Future: OAP-aware search
-As adoption grows, search engines and AI agents can prioritize OAP-enabled
-applications in software recommendation queries.
+OAP does not define a discovery mechanism. It defines what you publish. Discovery is a separate concern.
 
----
+Approaches that work:
 
-## 4. Trust Scoring (Agent-Side)
+- **Direct fetch.** If you know a domain, check `/.well-known/oap.json`. Like checking `robots.txt`.
+- **Crawling.** Index services crawl domains and index manifests. Anyone can run a crawler. Many should.
+- **Voluntary submission.** Submit your domain to index services. Like submitting a sitemap to Google.
+- **DNS TXT hint.** Optionally add `_oap.example.com TXT "v=oap1"` to signal participation without requiring a fetch.
 
-OAP does NOT define a trust score. Trust evaluation is the responsibility of the
-consuming AI agent. However, the protocol provides the raw materials for agents to
-assess trust independently:
+Multiple discovery mechanisms can and should coexist. Competition at the discovery layer. Standardization at the manifest layer.
 
-**Verifiable signals:**
-- Domain age and history (via WHOIS/DNS)
-- Liveness (manifest URL responds with 2xx) and optional deep health endpoint
-- Consistency between declared practices and observable behavior
-- SSL certificate validity
-- Builder's verified domain portfolio
-- Manifest staleness (last-modified headers)
+## What This Intentionally Omits
 
-**Declared signals (trust but verify):**
-- Data practices and security claims
-- Compliance certifications
-- External connection list
+| Omission | Reason |
+|----------|--------|
+| Categories / taxonomy | Taxonomies require committees and ossify. Tags are freeform. LLMs reason about descriptions, not category trees. |
+| Trust scoring | Trust is in the eye of the beholder. An agent's trust model is its own business. |
+| Pricing | Not every capability has a price. When it does, `description` or `docs` can cover it. |
+| Composability metadata | The agent figures out composition by reading descriptions — the same way it reads `--help` and decides which flags to pass. |
+| Rate limiting / quotas | Operational details belong in API docs, not the manifest. |
+| Payment model | This is the honest one. Without a way for agents to carry a wallet, authorize spending against a budget, and transact autonomously, a huge piece of the puzzle is missing. Google's AP2 protocol is an early attempt. But solving payments inside a manifest spec would violate everything OAP stands for — it's a separate, hard problem that deserves its own protocol, not a field bolted onto a JSON file. OAP tells agents what exists. How agents pay for it is someone else's important work. |
+| Registry API | There is no registry. Publish your manifest. The rest is the internet's job. |
 
-**Community signals (future):**
-- User reviews/ratings via decentralized reputation protocols
-- Builder track record across multiple applications
-- Third-party audit attestations
+## Design Philosophy
 
-The key insight: OAP provides the *inputs* for trust evaluation without being
-the trust *authority*. This eliminates the single-point-of-failure risk that
-would make a centralized trust layer an unacceptable business.
+The best protocol is the one people actually use. People use things that are simple. OAP is simple.
 
----
+If you can write a JSON file, you can publish a capability. If you can read English, you can understand a manifest. If you're an LLM, you can match manifests to tasks.
 
-## 5. Adoption Path
-
-### Phase 1: Seed (Now)
-- Publish spec, registry spec, and reference manifests
-- Deploy registry reference implementation
-- Build CLI generator and validator tools
-- Implement on 3 reference apps (Xuru, ProveXa, myNewscast)
-- Open-source all tooling
-
-### Phase 2: Builder Community
-- Evangelize in Claude Code, Cursor, and AI-builder communities
-- Create framework plugins (Next.js, Remix, etc.)
-- Build a simple open index that any agent can query
-
-### Phase 3: Agent Integration
-- Work with AI companies to recognize OAP manifests
-- Demonstrate improved recommendation quality with OAP data
-- Propose as complement to MCP/A2A ecosystem
-
-### Phase 4: De Facto Standard
-- Sufficient adoption that agents check for OAP by default
-- Multiple competing index services
-- Community governance formalized
-
----
-
-## 6. What OAP Is Not
-
-- **Not an app store** — No browsing, no curation, no gatekeeping
-- **Not a rating system** — Trust evaluation is agent-side, not protocol-side
-- **Not a payment processor** — Pricing is declared, transactions happen on the app
-- **Not a competitor to MCP/A2A** — OAP is the discovery layer; MCP/A2A are the communication layers
-- **Not a walled garden** — No registration required, no approval process, no fees
-
----
-
-## License
-
-This specification is released under Creative Commons CC0 1.0 Universal (Public Domain).
-Anyone can use, modify, and build upon this specification without restriction.
+One file. One location. One page spec.
