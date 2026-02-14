@@ -1,6 +1,6 @@
 # Why Manifests Are the Cognitive API for Artificial Intelligence
 
-**And why the people building AI infrastructure couldn't see it.**
+**And why it took this long to name it.**
 
 ---
 
@@ -12,37 +12,37 @@ The answer was obvious once stated. The LLM reads a description — just like it
 
 A manifest isn't metadata. It's how AI learns.
 
-This raised an uncomfortable follow-up: if the answer is this simple, why has nobody in the AI industry said it?
+This raised an uncomfortable follow-up: if the answer is this simple, why hasn't the industry converged on it yet?
 
-## The Blind Spots
+## The Missing Lens
 
-Three structural blind spots prevent the people closest to AI from seeing what's in front of them.
+Three structural reasons explain why this pattern hasn't emerged from the existing communities — and why it took an outsider's perspective to name it.
 
-### Blind Spot 1: ML Researchers Think Learning Only Happens During Training
+### Perspective 1: ML Research Is Focused on Training-Time Learning
 
 The entire field of machine learning is organized around a single premise: you make AI smarter by improving what happens *before* deployment. Better training data. Better architectures. Better fine-tuning. Better RLHF. Every paper, every benchmark, every PhD thesis is oriented around making the model's frozen knowledge more comprehensive.
 
-Within that worldview, the idea that AI could learn about a new capability by reading a text file at runtime feels like cheating. It doesn't require any ML innovation. There's no architecture to design, no benchmark to beat, no paper to publish. A JSON file with a description field isn't a research contribution. It's too simple to take seriously.
+Within that worldview, the idea that AI could learn about a new capability by reading a text file at runtime is understandably outside the field's focus. It doesn't require any ML innovation. There's no architecture to design, no benchmark to beat, no paper to publish. A JSON file with a description field isn't a research contribution. It's too simple to take seriously.
 
 But simplicity isn't a flaw. It's a signal. The most important interface standards in computing history — ASCII, HTTP, HTML, DNS — were all derided as too simple by the people building more complex alternatives. The OSI model was seven layers of committee-designed perfection. TCP/IP was a hack that actually worked. The hack won.
 
-### Blind Spot 2: Enterprise Architects Think Discovery Requires Infrastructure
+### Perspective 2: Enterprise Architecture Defaults to Infrastructure
 
 The enterprise technology world sees every problem as an infrastructure problem. Agent discovery? Build a registry. Agent communication? Design a protocol with lifecycle states, push notifications, and gRPC bindings. Agent payments? A whole separate protocol extension.
 
 Google convened 150 organizations to build A2A — the Agent-to-Agent protocol. It's well-engineered. It's comprehensive. It has versioning, security cards, streaming support, and a growing ecosystem. It's also, as of version 0.3, still missing a registry specification. Their own community has over 100 comments on a GitHub discussion thread debating whether the registry should be centralized or decentralized. The protocol for agents to talk to each other doesn't yet include a standard way for agents to find each other.
 
-This isn't an oversight. It's a symptom. Registry design is hard because registries are the wrong abstraction. The internet tried centralized directories before — Yahoo, DMOZ, the semantic web. They all failed. Not because they were poorly executed, but because taxonomies require committees, committees require consensus, consensus requires compromise, and compromise produces specifications so broad they describe everything and match nothing.
+This isn't an oversight. It's a symptom. Registry design is hard because registries may be the wrong abstraction for this particular problem. The internet tried centralized directories before — Yahoo, DMOZ, the semantic web. They all failed. Not because they were poorly executed, but because taxonomies require committees, committees require consensus, consensus requires compromise, and compromise produces specifications so broad they describe everything and match nothing.
 
 The internet solved discovery with a format (HTML) and an ecosystem (crawlers, search engines). No registry. No taxonomy. No committee. Just publish and be found.
 
-### Blind Spot 3: The Agent/App Distinction Is Load-Bearing
+### Perspective 3: The Agent/App Distinction Is Economically Load-Bearing
 
 The most powerful blind spot is economic. The AI industry needs "agents" to be a new and special category of software that requires new and special infrastructure.
 
 If agents are just applications — if the thing being invoked doesn't change regardless of whether a human or an AI is calling it — then you don't need agent frameworks, agent marketplaces, agent orchestration platforms, agent observability tools, or agent-specific protocols. Billions of dollars in venture funding, thousands of startups, and entire product categories at Google, Microsoft, and Amazon depend on "agents" being fundamentally different from "applications."
 
-Nobody in that ecosystem is incentivized to say "this is just Unix and a JSON file."
+It's worth asking: if a simpler answer exists, what structural forces would prevent it from surfacing?
 
 But it is. An application that accepts input, does work, and produces output is a capability. `grep` is an agent — it accepts a task, executes autonomously, returns results. It just doesn't have a marketing team. The difference between an "agent" and an "application" is the invoker, not the thing being invoked.
 
@@ -98,7 +98,7 @@ The protocols that win share three properties:
 
 OAP has all three properties. The spec is one page. It standardizes only the manifest format and the publishing convention. It requires no registration, no approval, and no fees. It is, by design, the minimum viable protocol that enables the maximum possible ecosystem.
 
-Thirty years of watching protocols teaches you one thing: the spec that wins is always the one the committee would be embarrassed by. It's too simple. It doesn't handle enough edge cases. It leaves too much undefined. And then it conquers the world because a million developers can actually use it, while the "proper" specification is still in committee review.
+Thirty years of watching protocols teaches you one thing: the spec that wins is always the one that looks too simple at first. It's too simple. It doesn't handle enough edge cases. It leaves too much undefined. And then it conquers the world because a million developers can actually use it, while the "proper" specification is still in committee review.
 
 ## What We're Actually Claiming
 
@@ -108,7 +108,7 @@ Let's be precise about what OAP asserts, because the claim is genuinely new:
 
 **2. Discovery is not an infrastructure problem. It's a publishing problem.** Thirty years of internet history show that discovery works when formats are standardized and discovery mechanisms are left to the ecosystem. Registries centralize. Taxonomies ossify. Search engines compete and improve. OAP bets on the web model, not the registry model.
 
-**3. The agent/app distinction is artificial and harmful.** It's artificial because the thing being invoked doesn't change based on who invokes it. It's harmful because it drives the industry to build redundant infrastructure for "agents" that already exists for "applications." Collapsing the distinction simplifies everything.
+**3. The agent/app distinction is worth questioning.** It's artificial because the thing being invoked doesn't change based on who invokes it. It's worth questioning because it drives the industry to build redundant infrastructure for "agents" that already exists for "applications." Collapsing the distinction simplifies everything.
 
 **4. Composability is the agent's job, not the protocol's.** Unix didn't build composability metadata into its tools. It gave tools stdio and let the operator figure out the piping. OAP gives capabilities a manifest and lets the agent figure out the composition. The intelligence required to compose capabilities now exists in the invoker — the LLM — not in the specification.
 
